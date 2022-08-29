@@ -41,6 +41,11 @@ const listenEventUSDT = async (address, block) => {
   return tx
 }
 
+const getTransaction = async (transaction) => {
+  const data = await web3.eth.getTransaction(transaction)
+  console.log(data)
+}
+
 const listenEventUSDC = async (address, block) => {
   const tx = await USDCContract.getPastEvents('Transfer', {
     filter: {
@@ -57,9 +62,22 @@ const redisCheckBlock = async function () {
   return redisClient.get('fromBlock', 0).then(await redisClient.quit())
 }
 
+const balanceChange = web3.eth.subscribe(
+  'logs',
+  {
+    address: '0x887872dfFC74C69B8d111390925DD4C6CF78E796',
+  },
+  function (error, result) {
+    if (!error) console.log(result)
+  }
+)
+
 module.exports = {
   listenEventUSDT: listenEventUSDT,
   redisCheckBlock: redisCheckBlock,
   listenEventUSDC: listenEventUSDC,
 }
-// getDecimals(USDTAddress)
+
+// getTransaction(
+//   '0x362e22e1cf2c2b7d9e1a288e8399f449e82f0459ca357cfe39de8e827a4a7fea'
+// )

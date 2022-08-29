@@ -3,16 +3,15 @@ const web3 = new Web3(
   'https://eth-rinkeby.alchemyapi.io/v2/yeSJBqDewxzDLQTI2f3YURU9KLzbWSbc'
 )
 const ABI = require('../ABI/transferERC20ABI.json')
+const config = require('dotenv').config()
 
-const wallet = web3.eth.accounts.wallet.add(privateKey)
+const wallet = web3.eth.accounts.wallet.add(process.env.KEY)
 
 const sendERC20Token = async function (tokenAddress, receiver, amount) {
   const tokenContract = new web3.eth.Contract(ABI, tokenAddress)
   var gasprice = await web3.eth.getGasPrice()
   var transfer = tokenContract.methods.transfer(receiver, amount)
   var gasEstimate = await transfer.estimateGas({ from: wallet.address })
-  console.log('gas price ' + gasprice)
-  console.log('gas estimate ' + gasEstimate)
   const tx = await transfer.send({
     from: wallet.address,
     gas: web3.utils.toHex(gasEstimate),
