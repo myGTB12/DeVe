@@ -2,6 +2,9 @@ const Web3 = require('web3')
 const web3 = new Web3(
   'https://eth-rinkeby.alchemyapi.io/v2/yeSJBqDewxzDLQTI2f3YURU9KLzbWSbc'
 )
+const axios = require('axios')
+const url = 'http://localhost:3000/data'
+
 const db = require('../db.js')
 const decimalABI = require('../ABI/decimals.json')
 const azero = require('./azerotest')
@@ -46,9 +49,17 @@ async function checkTXEther() {
             (data.token.localeCompare(USDCAddress) ||
               data.token.localeCompare(USDTAddress))
           ) {
-            db.query(
-              `UPDATE transactions SET status = 'SUCCESS' WHERE id=${element.id}`
-            )
+            try {
+              const { data: resData } = await axios({
+                method: 'post',
+                url: url,
+                data: data,
+              })
+              console.log(resData)
+            } catch (err) {
+              console.log(err)
+            }
+
             console.log(`${element.id} updated`)
           } else {
             console.log(`${element.id} tạch tạch tạch`)
@@ -72,18 +83,22 @@ async function checkTxAzero() {
           const tx = await azero.checkUserFromBlockHash(
             element.transaction_code
           )
-          // console.log(tx.address_from, element.from_wallet_address)
-          // console.log(tx.address_to, element.to_wallet_address)
-          // console.log(tx.amount / Math.pow(10, 12), element.send_amount)
 
           if (
             !tx.address_from.localeCompare(element.from_wallet_address) &&
             !tx.address_to.localeCompare(element.to_wallet_address) &&
             tx.amount / Math.pow(10, 12) == element.send_amount
           ) {
-            db.query(
-              `UPDATE transactions SET status = 'SUCCESS' WHERE id=${element.id}`
-            )
+            try {
+              const { data: resData } = await axios({
+                method: 'post',
+                url: url,
+                data: tx,
+              })
+              console.log(resData)
+            } catch (err) {
+              console.log(err)
+            }
             console.log(`${element.id} updated`)
           } else {
             console.log(`${element.id} tạch tạch tạch`)
@@ -117,4 +132,4 @@ const getDecimals = async (token) => {
   return decimal
   //   console.log(decimal)
 }
-module.exports = { checkTXEther, checkTxAzero }
+module.exports = { checkTXEther, checkTxAzero, getDecimals }
