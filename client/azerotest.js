@@ -3,8 +3,8 @@ const config = require('dotenv').config()
 
 const PHRASE = process.env.PHASE_AZERO
 
-const addr = '5CahCCFB3SShAkfUntPzR2poYp7D8NeK42xKbcusfSXngXE5' //Duc
-
+const addr = '5EfPAUD3Lh4cp8XWVGKtj7VUFH2cqUdDFa4czTvcvmxsRaEd' //Duc
+const receiver = '5Fuyyi6ABGYPZYqaCxy5qxvtkUTEaZ4UWmzuc3admnHqi6Sr'
 const keyring = new Keyring({ type: 'sr25519' })
 
 const provider = new WsProvider('wss://ws.test.azero.dev')
@@ -41,12 +41,12 @@ async function balanceChange() {
   let {
     data: { free: previousFree },
     nonce: previousNonce,
-  } = await api.query.system.account(addr)
+  } = await api.query.system.account(receiver)
   console.log(
     `Your account has a balance of ${previousFree}, nonce ${previousNonce}`
   )
   api.query.system.account(
-    addr,
+    receiver,
     ({ data: { free: currentFree }, nonce: currentNonce }) => {
       const change = currentFree.sub(previousFree)
       if (!change.isZero()) {
@@ -57,7 +57,14 @@ async function balanceChange() {
     }
   )
 }
-
+async function transfer() {
+  const provider = new WsProvider('wss://ws.test.azero.dev')
+  const api = await ApiPromise.create({ provider })
+  const myAccount = keyring.addFromUri(process.env.PHASE_AZERO)
+  const info = await api.tx.balances
+    .transfer(receiver, 123)
+    .paymentInfo(myAccount)
+}
 //gửi tiền và lấy về blockHash
 async function getBlockHash() {
   const provider = new WsProvider('wss://ws.test.azero.dev')
@@ -104,4 +111,3 @@ module.exports = { checkUserFromBlockHash }
 //   console.log('hehe', abc)
 // }
 // test()
-// getBlockHash()

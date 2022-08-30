@@ -6,7 +6,7 @@ const axios = require('axios')
 const url = 'http://localhost:3000/data'
 
 const db = require('../db.js')
-const decimalABI = require('../ABI/decimals.json')
+const ABI = require('../ABI/ABI.json')
 const azero = require('./azerotest')
 
 const USDCAddress = '0xeb8f08a975Ab53E34D8a0330E0D34de942C95926'
@@ -25,6 +25,7 @@ async function checkTXEther() {
         }
         tx_code = result.forEach(async (element) => {
           const tx = await getTransaction(element.transaction_code)
+
           const input = tx.input
           const address_to = '0x' + input.substr(34, 40)
           const amount = '0x' + input.substr(74, 64)
@@ -127,9 +128,10 @@ const getTransaction = async (transaction) => {
 }
 
 const getDecimals = async (token) => {
-  const contract = new web3.eth.Contract(decimalABI, token)
+  const contract = new web3.eth.Contract(ABI, token)
   const decimal = await contract.methods.decimals().call()
+
   return decimal
-  //   console.log(decimal)
 }
+
 module.exports = { checkTXEther, checkTxAzero, getDecimals }
