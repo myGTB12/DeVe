@@ -1,6 +1,6 @@
 const Web3 = require('web3')
 const web3 = new Web3(
-  'https://eth-goerli.g.alchemy.com/v2/nnYMEQqYNoP72dLc_iCoGNKUVK5ZTMod'
+  'wss://eth-goerli.g.alchemy.com/v2/nnYMEQqYNoP72dLc_iCoGNKUVK5ZTMod'
 )
 const cron = require('node-cron')
 const redis = require('redis')
@@ -48,9 +48,35 @@ async function scan() {
   client.set('etherBlock', +blockNumber + 5)
 }
 
-cron.schedule('* * * * *', () => {
-  console.log(
-    '--------------------------------------------------------------------------'
-  )
-  scan()
-})
+// cron.schedule('* * * * *', () => {
+//   console.log(
+//     '--------------------------------------------------------------------------'
+//   )
+//   scan()
+// })
+async function scanBlock() {
+  var subscription = web3.eth
+    .subscribe('newBlockHeaders', async function (error, result) {
+      if (!error) {
+        const blockNumber = result.number
+        await scanTransactionsInBlock(blockNumber)
+      }
+
+      console.error(error)
+    })
+    .on('connected', function (subscriptionId) {
+      console.log(subscriptionId)
+    })
+    .on('data', function (blockHeader) {
+      console.log(blockHeader)
+    })
+    .on('error', console.error)
+
+  // unsubscribes the subscription
+  subscription.unsubscribe(function (error, success) {
+    if (success) {
+      console.log('Successfully unsubscribed!')
+    }
+  })
+}
+scanBlock()
