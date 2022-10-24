@@ -40,22 +40,30 @@ async function checkUserFromBlockHash(blockHash) {
   })
 }
 
-async function getblockI() {
+async function scanBlock() {
   const api = await ApiPromise.create({ provider })
-  const blockNumber = await redisBlock()
-  console.log(12)
-  for (let i = blockNumber; i < blockNumber + 60; i++) {
-    const blockHash = await api.rpc.chain.getBlockHash(blockNumber + Number(i))
-    checkUserFromBlockHash(blockHash)
-  }
-  console.log(34)
-  await client.connect()
-  client.set('azeroBlock', blockNumber + 60)
-}
 
-cron.schedule('* * * * *', () => {
-  console.log(
-    '--------------------------------------------------------------------------'
-  )
-  getblockI()
-})
+  await api.rpc.chain.subscribeNewHeads((lastHeader) => {
+    const blockHash = lastHeader.parentHash.toJSON()
+    // console.log(blockHash)
+    checkUserFromBlockHash(blockHash)
+  })
+}
+scanBlock()
+// async function getblockI() {
+//   const api = await ApiPromise.create({ provider })
+//   const blockNumber = await redisBlock()
+//   for (let i = blockNumber; i < blockNumber + 60; i++) {
+//     const blockHash = await api.rpc.chain.getBlockHash(blockNumber + Number(i))
+//     checkUserFromBlockHash(blockHash)
+//   }
+//   await client.connect()
+//   client.set('azeroBlock', blockNumber + 60)
+// }
+
+// cron.schedule('* * * * *', () => {
+//   console.log(
+//     '--------------------------------------------------------------------------'
+//   )
+//   getblockI()
+// })
